@@ -4,8 +4,12 @@
 
 #include <QtQuick>
 #include <QDebug>
+#include <sailfishapp.h>
 
 #define rust_fun extern "C"
+
+QGuiApplication *singleton_gui_app;
+QQuickView *singleton_view;
 
 rust_fun QrsApplicationEngine *qmlrs_create_engine_headless() {
     if (!QCoreApplication::instance()) {
@@ -24,7 +28,7 @@ rust_fun QrsApplicationEngine *qmlrs_create_engine_headless() {
 }
 
 rust_fun QrsApplicationEngine *qmlrs_create_engine() {
-    if (!QGuiApplication::instance()) {
+    if (!singleton_gui_app) {
         char *arg = (char *)malloc(13);
         strcpy(arg, "qmlrswrapper");
         char **argp = (char **)malloc(sizeof(char *));
@@ -33,10 +37,22 @@ rust_fun QrsApplicationEngine *qmlrs_create_engine() {
         int *argc = (int *)malloc(sizeof(int));
         *argc = 1;
 
-        new QGuiApplication(*argc, argp);
+        singleton_gui_app = SailfishApp::application(*argc, argp);
     }
 
     return new QrsApplicationEngine();
+}
+
+rust_fun void qmlrs_create_view(const char *path, uint len) {
+    singleton_view = SailfishApp::createView();
+
+    QString qml = QString::fromUtf8(path, len);
+    singleton_view->setSource(QUrl::fromLocalFile(qml));
+    singleton_view->show();
+
+    QObject::connect(singleton_view->engine(), &QQmlEngine::quit, singleton_gui_app, &QGuiApplication::quit);
+
+    return;
 }
 
 rust_fun void qmlrs_destroy_engine(QrsApplicationEngine *engine) {
@@ -67,7 +83,7 @@ rust_fun void qmlrs_engine_invoke(QrsApplicationEngine *engine, const char *meth
 
 rust_fun void qmlrs_engine_set_property(QrsApplicationEngine *engine, const char *name, uint len,
                                         QObject *object) {
-    engine->rootContext()->setContextProperty(QString::fromUtf8(name, len), object);
+    singleton_view->rootContext()->setContextProperty(QString::fromUtf8(name, len), object);
 }
 
 rust_fun QVariantList *qmlrs_varlist_create() {
@@ -92,7 +108,7 @@ rust_fun QVariant *qmlrs_varlist_get(const QVariantList *list, unsigned int i) {
 }
 
 rust_fun void qmlrs_app_exec() {
-    QGuiApplication::exec();
+    singleton_gui_app->exec();
 }
 
 rust_fun void qmlrs_variant_set_int64(QVariant *v, int64_t x) {

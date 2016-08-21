@@ -20,6 +20,7 @@ pub enum QrsVariantType {
 pub type SlotFunction = extern "C" fn(data: *mut c_void, id: c_int, args: *const *const QVariant);
 
 extern "C" {
+    pub fn qmlrs_create_view(path: *const c_char, len: c_uint);
     pub fn qmlrs_create_engine() -> *mut QrsEngine;
     pub fn qmlrs_create_engine_headless() -> *mut QrsEngine;
     pub fn qmlrs_destroy_engine(engine: *mut QrsEngine);

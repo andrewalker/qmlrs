@@ -113,6 +113,11 @@ impl Engine {
     }
 
 
+    pub fn create_view(&mut self, path: &str) {
+        unsafe {
+            ffi::qmlrs_create_view(path.as_ptr() as *const c_char, path.len() as c_uint);
+        };
+    }
 
     pub fn load_local_file<P: AsRef<Path>>(&mut self, name: P) {
         let path_raw = std::env::current_dir().unwrap().join(name);

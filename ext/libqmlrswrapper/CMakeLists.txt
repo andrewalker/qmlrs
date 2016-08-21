@@ -16,12 +16,18 @@ else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+include(FindPkgConfig)
+pkg_search_module(SAILFISH sailfishapp REQUIRED)
+
 find_package(Qt5Core)
 find_package(Qt5Quick)
 
 set(qmlrswrapper_SRCS libqmlrswrapper.cpp qrsdynamicobject.cpp qrsdynamicobject_capi.cpp)
 
 add_library(qmlrswrapper STATIC ${qmlrswrapper_SRCS})
+
+include_directories(${SAILFISH_INCLUDE_DIRS})
+
 target_link_libraries(qmlrswrapper Qt5::Core Qt5::Quick)
 
 install(TARGETS qmlrswrapper ARCHIVE DESTINATION lib)
