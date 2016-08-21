@@ -11,22 +11,6 @@
 QGuiApplication *singleton_gui_app;
 QQuickView *singleton_view;
 
-rust_fun QrsApplicationEngine *qmlrs_create_engine_headless() {
-    if (!QCoreApplication::instance()) {
-        char *arg = (char *)malloc(13);
-        strcpy(arg, "qmlrswrapper");
-        char **argp = (char **)malloc(sizeof(char *));
-        *argp = arg;
-
-        int *argc = (int *)malloc(sizeof(int));
-        *argc = 1;
-
-        new QCoreApplication(*argc, argp);
-    }
-
-    return new QrsApplicationEngine();
-}
-
 rust_fun QrsApplicationEngine *qmlrs_create_engine() {
     if (!singleton_gui_app) {
         char *arg = (char *)malloc(13);
@@ -57,28 +41,6 @@ rust_fun void qmlrs_create_view(const char *path, uint len) {
 
 rust_fun void qmlrs_destroy_engine(QrsApplicationEngine *engine) {
     delete engine;
-}
-
-rust_fun void qmlrs_engine_load_url(QrsApplicationEngine *engine, const char *path, unsigned int len) {
-    engine->load(QUrl(QString::fromUtf8(path, len)));
-}
-
-rust_fun void qmlrs_engine_load_from_data(QrsApplicationEngine *engine, const char *data, unsigned int len) {
-    engine->loadData(QByteArray::fromRawData(data, len), QUrl());
-}
-
-rust_fun void qmlrs_engine_invoke(QrsApplicationEngine *engine, const char *method,
-                                  QVariant *result, const QVariantList *args)
-{
-    if (args->size() > 10) {
-        qFatal("Cannot invoke method with more than 10 arguments");
-    }
-
-    QVariant returned;
-    QMetaObject::invokeMethod(engine, "invokeQmlSlot", Q_RETURN_ARG(QVariant, returned),
-                              Q_ARG(QString, QString::fromUtf8(method)),
-                              Q_ARG(QVariantList, *args));
-    *result = returned;
 }
 
 rust_fun void qmlrs_engine_set_property(QrsApplicationEngine *engine, const char *name, uint len,

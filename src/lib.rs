@@ -3,8 +3,6 @@ extern crate libc;
 use libc::{c_char, c_int, c_uint, c_void};
 use std::sync::Arc;
 use ffi::{QrsEngine, QObject};
-use std::path::Path;
-use std::convert::AsRef;
 
 /* Re-exports */
 
@@ -98,36 +96,10 @@ impl Engine {
         }
     }
 
-    pub fn load_url(&mut self, path: &str) {
-        unsafe {
-            ffi::qmlrs_engine_load_url(self.i.p, path.as_ptr() as *const c_char,
-                                       path.len() as c_uint);
-        }
-    }
-
-    pub fn load_data(&mut self, data: &str) {
-        unsafe {
-            ffi::qmlrs_engine_load_from_data(self.i.p, data.as_ptr() as *const c_char,
-                                             data.len() as c_uint);
-        }
-    }
-
-
     pub fn create_view(&mut self, path: &str) {
         unsafe {
             ffi::qmlrs_create_view(path.as_ptr() as *const c_char, path.len() as c_uint);
         };
-    }
-
-    pub fn load_local_file<P: AsRef<Path>>(&mut self, name: P) {
-        let path_raw = std::env::current_dir().unwrap().join(name);
-        let path
-            = if cfg!(windows) {
-                format!("file:///{}",path_raw.display())
-            } else {
-                format!("file://{}",path_raw.display())
-            } ;
-        self.load_url(&path);
     }
 
     pub fn exec(self) {
@@ -186,57 +158,5 @@ impl MetaObject {
                                              name.len() as c_uint, argc as c_uint);
         }
         self
-    }
-}
-
-/*
-pub struct Handle {
-    i: Weak<EngineInternal>
-}
-
-impl Handle {
-    pub fn invoke(&self, method: &str, args: &[Variant]) -> Result<Option<Variant>, &'static str> {
-        unsafe {
-            let cstr = method.to_c_str();
-
-            let c_args = ffi::qmlrs_varlist_create();
-            assert!(!c_args.is_null());
-            for arg in args.iter() {
-                let c_arg = ffi::qmlrs_varlist_push(c_args);
-                assert!(!c_arg.is_null());
-                arg.to_qvariant(c_arg);
-            }
-
-            let result = ffi::qmlrs_variant_create();
-            assert!(!result.is_null());
-
-            match self.i.upgrade() {
-                Some(i) => ffi::qmlrs_engine_invoke(i.p, cstr.as_ptr(), result,
-                                               c_args as *const QVariantList),
-                None    => {
-                    ffi::qmlrs_variant_destroy(result);
-                    ffi::qmlrs_varlist_destroy(c_args);
-                    return Err("View has been freed")
-                }
-            }
-
-            ffi::qmlrs_varlist_destroy(c_args);
-
-            let ret = FromQVariant::from_qvariant(result as *const QVariant);
-            ffi::qmlrs_variant_destroy(result);
-
-            Ok(ret)
-        }
-    }
-}
-*/
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_create_engine() {
-        Engine::new_headless();
     }
 }
