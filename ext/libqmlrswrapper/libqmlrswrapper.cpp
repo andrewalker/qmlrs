@@ -138,26 +138,3 @@ rust_fun void qmlrs_variant_get_string_data(const QVariant *v, char *data) {
 QrsApplicationEngine::QrsApplicationEngine()
 {
 }
-
-QVariant QrsApplicationEngine::invokeQmlSlot(QString name, QVariantList args) {
-    QObject *root = rootObjects().first();
-
-    QVariant returned;
-
-    QGenericArgument a0, a1, a2, a3, a4, a5, a6, a7, a8, a9;
-    if (args.size() > 9) a9 = Q_ARG(QVariant, args[9]);
-    if (args.size() > 8) a8 = Q_ARG(QVariant, args[8]);
-    if (args.size() > 7) a7 = Q_ARG(QVariant, args[7]);
-    if (args.size() > 6) a6 = Q_ARG(QVariant, args[6]);
-    if (args.size() > 5) a5 = Q_ARG(QVariant, args[5]);
-    if (args.size() > 4) a4 = Q_ARG(QVariant, args[4]);
-    if (args.size() > 3) a3 = Q_ARG(QVariant, args[3]);
-    if (args.size() > 2) a2 = Q_ARG(QVariant, args[2]);
-    if (args.size() > 1) a1 = Q_ARG(QVariant, args[1]);
-    if (args.size() > 0) a0 = Q_ARG(QVariant, args[0]);
-
-    QMetaObject::invokeMethod(root, name.toUtf8(), Q_RETURN_ARG(QVariant, returned),
-                              a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-
-    return returned;
-}

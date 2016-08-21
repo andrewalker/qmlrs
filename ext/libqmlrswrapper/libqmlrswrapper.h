@@ -9,12 +9,9 @@ class QrsInterface;
 
 class QrsApplicationEngine : public QQmlApplicationEngine {
     Q_OBJECT
-    
+
 public:
     QrsApplicationEngine();
-    
-public slots:
-    QVariant invokeQmlSlot(QString name, QVariantList args);
 };
 
 #endif // libqmlrswrapper_H
